@@ -1,43 +1,52 @@
 const refs = {
   imageContainer: document.getElementById('image-container'),
   loader: document.getElementById('loader'),
-};
+}; 
 
 let photoArray = [];
-
-const COUNT = 10;
-const API_KEY = 'z1nHTXwgArswVQ-gOPdPcmxO83jLB2pXeUUnUobfS38';
-
+let ready = false;
+let totalImages = 0;
+let imagesLoaded = 0;
+let COUNT = 5;
+ 
+const API_KEY = '3E0L30idhfe_Y2J4UamUwtUxLyHCZT9HmOC5JXgy_fU';
 const apiUrl = `https://api.unsplash.com/photos/random/?client_id=${API_KEY}&count=${COUNT}`;
 
+function imageLoaded() {
+  imagesLoaded += 1;
+  if (imagesLoaded === totalImages) {
+    refs.loader.hidden = true;
+    ready = true;
+    COUNT = 30
+  }
+}
+
+
 function HelperSetAttributes(element, attributes) {
-  for( const key in attributes) {
-    element.setAttribute(key, attributes[key])
+  for (const key in attributes) {
+    element.setAttribute(key, attributes[key]);
   }
 }
 
 function displayPhotosMarkUp() {
   photoArray.forEach((photo) => {
+    imagesLoaded = 0;
+    totalImages = photoArray.length;
     const item = document.createElement('a');
-    // item.setAttribute('href', photo.links.html);
-    // item.setAttribute('target', '_blank');
     HelperSetAttributes(item, {
       href: photo.links.html,
-      target: '_blank'
-    })
+      target: '_blank',
+    });
 
     const image = document.createElement('img');
-    // image.setAttribute('src', photo.urls.regular);
-    // image.setAttribute('alt', photo.alt_description);
-    // image.setAttribute('title', photo.alt_description);
-
     HelperSetAttributes(image, {
       src: photo.urls.regular,
       alt: photo.alt_description,
       title: photo.alt_description,
-    })
+    });
+    image.addEventListener('load', imageLoaded);
     item.appendChild(image);
-    refs.imageContainer.appendChild(item)
+    refs.imageContainer.appendChild(item);
   });
 }
 
@@ -50,5 +59,15 @@ async function fetchPhotosFromAPI() {
     console.log(error);
   }
 }
+
+window.addEventListener('scroll', () => {
+  if (
+    window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000 &&
+    ready
+  ) {
+    ready = false;
+    fetchPhotosFromAPI();
+  }
+});
 
 fetchPhotosFromAPI();
